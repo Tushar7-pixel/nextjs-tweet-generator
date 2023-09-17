@@ -12,32 +12,56 @@ import dotsDark from "../public/dots-dark.svg";
 import NextInputComponent from "@/components/NextComponents/NextInputComponent";
 import NextTextareaComponent from "@/components/NextComponents/NextTextareaComponent";
 import { useTheme } from "next-themes";
+import banDark from "../public/slash_ban.svg";
+import ban from "../public/ban-solid.svg";
 import NextRadioButton from "@/components/NextComponents/NextRadioButton";
+// import "bootstrap/dist/css/bootstrap.min.css";
 
 const Canvas = () => {
   const ref = useRef<HTMLDivElement | null>(null);
   const { theme } = useTheme();
+  const [dragged, setDragged] = useState<boolean>(false);
+
+  const inputRef = useRef(null);
+
   const [selectedImage, setSelectedImage] = useState<
     string | ArrayBuffer | null
   >(null);
   const [selectedCheckbox, setSelectedCheckbox] = useState<
     "blue" | "gold" | "none"
-  >("gold");
+  >("none");
   const [userData, setUserData] = useState({
     name: "Raviraj Solanki",
     userId: "@ravirajsolanki_",
     tweet:
       "Unleash your creativity with our cutting-edge tweet post maker – design tweets that shine in just a few clicks!",
   });
-
+  const handleButtonClick = () => {
+    // Trigger the input element's click event
+    inputRef.current.click();
+  };
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    console.log({ file });
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setSelectedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      let fileType = file.type;
+      let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+      if (validExtensions.includes(fileType)) {
+        let fileReader = new FileReader();
+        fileReader.onload = () => {
+          let fileURL = fileReader.result;
+
+          setSelectedImage(`${fileURL}`);
+          // let imgTag = ``;
+          // dropArea.innerHTML = imgTag;
+        };
+        fileReader.readAsDataURL(file);
+      } else {
+        alert("This is not an Image File!");
+        setDragged(false);
+        // dropArea.classList.remove("active");
+        // dragText.textContent = "Drag & Drop to Upload File";
+      }
     }
   };
 
@@ -65,6 +89,28 @@ const Canvas = () => {
     } else return profile;
   };
 
+  function viewfile(e: React.DragEvent<HTMLDivElement>) {
+    const file = e.dataTransfer.files[0];
+    console.log({ file1: file });
+    let fileType = file.type;
+    let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    if (validExtensions.includes(fileType)) {
+      let fileReader = new FileReader();
+      fileReader.onload = () => {
+        let fileURL = fileReader.result;
+
+        setSelectedImage(`${fileURL}`);
+        // let imgTag = ``;
+        // dropArea.innerHTML = imgTag;
+      };
+      fileReader.readAsDataURL(file);
+    } else {
+      alert("This is not an Image File!");
+      setDragged(false);
+      // dropArea.classList.remove("active");
+      // dragText.textContent = "Drag & Drop to Upload File";
+    }
+  }
   return (
     <div className=" box-border p-2 w-full h-full flex flex-col gap-4 md:flex-row">
       <div className="bg-gray-100 dark:bg-[#3B3B3B] border-[1px] border-[#E1E1EF] dark:border-[#b0b0cc93]    p-5 h-[440px] w-full overflow-auto md:h-full flex justify-center items-center">
@@ -124,15 +170,128 @@ const Canvas = () => {
       </div>
 
       <div className="flex flex-col w-full m-auto gap-5 border-[1px] border-[#E1E1EF] dark:border-[#b0b0cc93]   bg-[#F3F4F6]  p-5 dark:bg-[#3B3B3B]">
-        <input
+        {/* <input
           accept="images/*"
           type="file"
           name="img"
           id="img"
           placeholder="input"
           onChange={handleImageChange}
-        />
-        <div className="flex gap-2">
+        /> */}
+        <div className="flex  gap-5">
+          <div
+            className={`drag-image ${dragged && "active"}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+
+              setDragged(true);
+            }}
+            onDragLeave={(e) => {
+              e.preventDefault();
+
+              setDragged(false);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              viewfile(e);
+            }}
+          >
+            {selectedImage ? (
+              <img
+                src={selectedImage}
+                alt="image"
+                onClick={() => {
+                  setSelectedImage("");
+                }}
+              />
+            ) : (
+              <>
+                <div className="icon">
+                  <i className="fas fa-cloud-upload-alt"></i>
+                </div>
+                {dragged ? (
+                  <h6>Release to Upload File</h6>
+                ) : (
+                  <>
+                    <h6>Drag & Drop File Here</h6>
+                    <span>OR</span>
+                    <button onClick={handleButtonClick}>Browse File</button>
+                    <input
+                      id="inputFile"
+                      type="file"
+                      onChange={handleImageChange}
+                      ref={inputRef}
+                      hidden
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </div>
+          <div>
+            <h4>Select Verification Type</h4>
+            <div
+              className="flex flex-col gap-2 btn-group w-10"
+              data-toggle="buttons"
+            >
+              <label
+                className={`shadow-md hover:shadow-lg  dark:shadow-gray-500 bg-white dark:bg-black  p-3 ${
+                  selectedCheckbox === "none" &&
+                  " rounded  border-[3px] border-[#000000] dark:border-[#ffff]"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="options"
+                  id="option2"
+                  onClick={() => setSelectedCheckbox("none")}
+                  autoComplete="off"
+                  hidden
+                />
+                <Image
+                  src={theme === "dark" ? banDark : ban}
+                  width={20}
+                  height={20}
+                  alt=""
+                />
+              </label>
+
+              <label
+                className={`shadow-md hover:shadow-lg dark:shadow-gray-500 bg-white dark:bg-black  p-3 ${
+                  selectedCheckbox === "blue" &&
+                  "rounded border-[3px]   border-[#1d9bf0]   hover:shadow-lg  dark:shadow-[#1d9bf0]-500"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="options"
+                  id="option2"
+                  onClick={() => setSelectedCheckbox("blue")}
+                  autoComplete="off"
+                  hidden
+                />
+                <Image src={blueVerified} width={20} height={20} alt="" />
+              </label>
+              <label
+                className={`shadow-md hover:shadow-lg   dark:shadow-gray-500 bg-white dark:bg-black  p-3 ${
+                  selectedCheckbox === "gold" &&
+                  "rounded border-[3px] border-[#ebd456]  hover:shadow-lg  dark:shadow-[#ebd456]-500"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="options"
+                  id="option3"
+                  onClick={() => setSelectedCheckbox("gold")}
+                  autoComplete="off"
+                  hidden
+                />
+                <Image src={verified} width={20} height={20} alt="" />
+              </label>
+            </div>
+          </div>
+        </div>
+        {/* <div className="flex gap-2">
           <NextRadioButton
             label="none"
             name="verified"
@@ -154,8 +313,8 @@ const Canvas = () => {
             value={selectedCheckbox}
             setValue={() => setSelectedCheckbox("gold")}
           />
-        </div>
-        <div className="flex flex-col gap-1">
+        </div> */}
+        <div className="flex flex-col">
           <NextInputComponent
             label="Name"
             setValue={(e) => {
